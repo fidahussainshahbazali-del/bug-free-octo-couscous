@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Free Education Hub | Master Fida Husain</title>
+    
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <style>
+        :root { --main-color: #00e676; --bg-dark: #080808; --panel: #1a1a1a; --text-gray: #b0b0b0; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-dark); color: white; margin: 0; padding: 0; }
+        
+        header { background: #000; padding: 20px 15px; text-align: center; border-bottom: 3px solid var(--main-color); position: sticky; top: 0; z-index: 1000; }
+        .hub-name { font-size: 24px; font-weight: bold; color: var(--main-color); text-transform: uppercase; margin: 0; }
+        .whatsapp-link { background: #25d366; color: white; padding: 8px 15px; border-radius: 25px; text-decoration: none; display: inline-block; margin-top: 10px; font-size: 14px; }
+
+        .category-scroll { display: flex; overflow-x: auto; gap: 10px; padding: 15px; background: #111; scrollbar-width: none; }
+        .cat-box { background: var(--panel); padding: 10px 20px; border-radius: 12px; white-space: nowrap; font-size: 13px; border: 1px solid #333; cursor: pointer; }
+        .cat-box.active { background: var(--main-color); color: black; font-weight: bold; border: none; }
+
+        .live-room { padding: 15px; }
+        .video-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .video-feed { background: #000; height: 180px; border-radius: 15px; border: 1px solid #222; position: relative; overflow: hidden; }
+        .video-feed video { width: 100%; height: 100%; object-fit: cover; }
+        .label { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6); font-size: 10px; padding: 3px 8px; border-radius: 5px; color: var(--main-color); }
+
+        /* Discovery Area */
+        .discovery-list { background: #111; margin: 10px 15px; padding: 10px; border-radius: 10px; border: 1px solid #222; }
+        .user-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #222; }
+        .c-btn { background: var(--main-color); color: black; border: none; padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 12px; }
+
+        .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 15px; }
+        .tool-card { background: var(--panel); padding: 15px; border-radius: 15px; text-align: center; border-bottom: 3px solid #333; transition: 0.3s; }
+        .tool-card h4 { margin: 10px 0 5px 0; font-size: 14px; }
+        .tool-card p { font-size: 11px; color: var(--text-gray); margin: 0; }
+
+        .chat-section { margin: 20px 15px; background: #111; border-radius: 15px; padding: 15px; border: 1px solid #222; }
+        .messages { height: 150px; overflow-y: auto; margin-bottom: 10px; font-size: 13px; text-align: left; }
+        .chat-input { display: flex; gap: 10px; }
+        input { flex: 1; background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; }
+        .send-btn { background: var(--main-color); border: none; padding: 0 15px; border-radius: 10px; font-weight: bold; }
+
+        nav { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #222; }
+        .nav-link { color: #666; text-decoration: none; font-size: 12px; }
+        .nav-link.active { color: var(--main-color); }
+    </style>
+</head>
+<body>
+
+<header>
+    <p class="hub-name">FREE EDUCATION HUB</p>
+    <a href="https://wa.me/923443744818" class="whatsapp-link">Helpline: 0344 3744818</a>
+</header>
+
+<div class="category-scroll">
+    <div class="cat-box active">Software Development</div>
+    <div class="cat-box">Facebook Earning</div>
+    <div class="cat-box">TikTok Earning</div>
+    <div class="cat-box">Science (Bio/Chem/Phy)</div>
+    <div class="cat-box">English & Math</div>
+</div>
+
+<div class="live-room">
+    <div class="video-container">
+        <div class="video-feed" style="border-color: var(--main-color);">
+            <video id="masterCam" autoplay muted playsinline></video>
+            <span class="label">Ustad Fida (You)</span>
+        </div>
+        <div class="video-feed">
+            <video id="studentCam" autoplay playsinline></video>
+            <span class="label" id="peerStatus">Live Student</span>
+        </div>
+    </div>
+</div>
+
+<div class="discovery-list" id="online-users">
+    <p style="font-size: 12px; color: #555;">Searching for online students...</p>
+</div>
+
+<div class="content-grid">
+    <div class="tool-card"><h4>Mobile Software</h4><p>Repairing</p></div>
+    <div class="tool-card"><h4>Coding</h4><p>Web Development</p></div>
+    <div class="tool-card"><h4>Social Earning</h4><p>FB & TikTok</p></div>
+    <div class="tool-card"><h4>Science Lab</h4><p>Bio, Chem, Physics</p></div>
+</div>
+
+<div class="chat-section">
+    <div class="messages" id="chatBox"><div><b>System:</b> Auto-Discovery Active.</div></div>
+    <div class="chat-input">
+        <input type="text" id="chatInp" placeholder="Type message...">
+        <button class="send-btn" onclick="sendMsg()">Send</button>
+    </div>
+</div>
+
+<nav>
+    <a href="#" class="nav-link active">Home</a>
+    <a href="#" class="nav-link">Courses</a>
+    <a href="#" class="nav-link">Earnings</a>
+    <a href="#" class="nav-link">Profile</a>
+</nav>
+
+<script>
+    // Firebase & PeerJS Logic for Auto Discovery
+    const firebaseConfig = { databaseURL: "https://free-education-hub-fida-default-rtdb.firebaseio.com/" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const peer = new Peer();
+    let localStream;
+
+    window.onload = async function() {
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            document.getElementById('masterCam').srcObject = localStream;
+            
+            peer.on('open', (id) => {
+                // Add me to online list
+                db.ref('hub_users/' + id).set({ peerId: id, name: "Student" });
+                db.ref('hub_users/' + id).onDisconnect().remove();
+            });
+
+            // Auto-Discovery: Watch online users
+            db.ref('hub_users').on('value', (snap) => {
+                const list = document.getElementById('online-users');
+                list.innerHTML = "";
+                snap.forEach((child) => {
+                    const user = child.val();
+                    if(user.peerId !== peer.id) {
+                        list.innerHTML += `<div class="user-item">
+                            <span>Online Student</span>
+                            <button class="c-btn" onclick="startCall('${user.peerId}')">CALL LIVE</button>
+                        </div>`;
+                    }
+                });
+            });
+
+        } catch (e) { console.log("Camera access needed"); }
+    };
+
+    function startCall(id) {
+        const call = peer.call(id, localStream);
+        call.on('stream', (remoteStream) => {
+            document.getElementById('studentCam').srcObject = remoteStream;
+        });
+    }
+
+    peer.on('call', (call) => {
+        call.answer(localStream);
+        call.on('stream', (remoteStream) => {
+            document.getElementById('studentCam').srcObject = remoteStream;
+        });
+    });
+
+    function sendMsg() {
+        const inp = document.getElementById('chatInp');
+        const box = document.getElementById('chatBox');
+        if(inp.value.trim() != "") {
+            box.innerHTML += `<div><b>You:</b> ${inp.value}</div>`;
+            inp.value = "";
+            box.scrollTop = box.scrollHeight;
+        }
+    }
+</script>
+
+</body>
+</html>
