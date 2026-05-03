@@ -3,128 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Fida Live Fix</title>
+    <title>Master Fida Live Hub</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        body { background: #050505; color: #fff; font-family: sans-serif; margin: 0; text-align: center; overflow-x: hidden; }
-        header { background: #000; padding: 15px; border-bottom: 3px solid #00e676; box-shadow: 0 0 20px #00e67655; }
-        .v-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 10px; }
-        .v-box { position: relative; width: 45%; min-width: 300px; height: 220px; background: #111; border-radius: 15px; border: 2px solid #222; overflow: hidden; }
+        :root { --neon: #00ff88; --bg: #050505; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; text-align: center; }
+        header { background: #000; padding: 20px; border-bottom: 3px solid var(--neon); box-shadow: 0 0 20px rgba(0,255,136,0.2); }
+        .v-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; padding: 20px; }
+        .v-box { width: 45%; min-width: 310px; height: 240px; background: #111; border-radius: 20px; border: 2px solid #222; position: relative; overflow: hidden; }
         video { width: 100%; height: 100%; object-fit: cover; }
-        .label { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 2px 10px; border-radius: 5px; color: #00e676; font-size: 12px; }
-        #log { background: #111; color: #00e676; padding: 10px; margin: 10px; font-size: 11px; border-radius: 8px; border: 1px solid #333; height: 50px; overflow-y: auto; text-align: left; }
-        .btn { background: #00e676; color: #000; border: none; padding: 15px 30px; border-radius: 10px; font-weight: bold; cursor: pointer; margin: 10px; font-size: 16px; box-shadow: 0 5px 15px #00e67644; }
-        .online-panel { background: #1a1a1a; padding: 20px; margin: 15px; border-radius: 20px; border: 1px solid #333; }
+        .label { position: absolute; top: 15px; left: 15px; background: rgba(0,255,136,0.15); color: var(--neon); padding: 5px 15px; border-radius: 50px; font-size: 11px; border: 1px solid var(--neon); }
+        #status-bar { background: #111; color: var(--neon); padding: 10px; margin: 10px; font-size: 12px; border-radius: 10px; border: 1px solid #333; height: 40px; overflow: hidden; }
+        .btn-live { background: var(--neon); color: black; border: none; padding: 15px 40px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 18px; margin: 20px; box-shadow: 0 10px 30px rgba(0,255,136,0.3); transition: 0.3s; }
+        .btn-live:active { transform: scale(0.95); }
+        .user-list { background: #111; margin: 20px; padding: 20px; border-radius: 20px; border: 1px solid #222; }
     </style>
 </head>
 <body>
 
-<header><h2>FREE EDUCATION HUB</h2></header>
+<header><h1 style="margin:0; letter-spacing:2px;">FREE EDUCATION HUB</h1></header>
 
-<div id="log">سسٹم لوڈ ہو رہا ہے...</div>
+<div id="status-bar">سسٹم شروع ہو رہا ہے... براہ کرم انتظار کریں</div>
 
-<div class="v-container">
-    <div class="v-box" style="border-color: #00e676;">
-        <video id="myVideo" autoplay muted playsinline></video>
-        <span class="label">آپ کا چہرہ</span>
+<div class="v-grid">
+    <div class="v-box" style="border-color: var(--neon);">
+        <video id="myCam" autoplay muted playsinline></video>
+        <span class="label">آپ (USTAD FIDA)</span>
     </div>
     <div class="v-box">
-        <video id="peerVideo" autoplay playsinline></video>
-        <span class="label">شاگرد کا چہرہ</span>
+        <video id="peerCam" autoplay playsinline></video>
+        <span class="label">شاگرد (LIVE)</span>
     </div>
 </div>
 
-<div class="online-panel">
-    <h3 style="color:#00e676; margin-top: 0;">لائیو شاگردوں کی فہرست</h3>
-    <div id="user-list">شاگرد تلاش کر رہے ہیں...</div>
+<div class="user-list">
+    <h3 style="color:var(--neon); margin-top:0;">آن لائن شاگردوں کی فہرست</h3>
+    <div id="shagird-found">شاگردوں کی تلاش جاری ہے...</div>
 </div>
 
 <script>
-    // Firebase Setup
-    const firebaseConfig = { databaseURL: "https://free-education-hub-fida-default-rtdb.firebaseio.com/" };
-    firebase.initializeApp(firebaseConfig);
+    // Firebase Config (Connectivity کے لیے)
+    const fbConf = { databaseURL: "https://free-education-hub-fida-default-rtdb.firebaseio.com/" };
+    firebase.initializeApp(fbConf);
     const db = firebase.database();
 
-    // PeerJS with Force TURN/STUN
+    // Peer Config (Google Servers)
     const peer = new Peer({
-        config: {
-            'iceServers': [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' }
-            ]
-        }
+        config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] }
     });
 
     let localStream;
-    const logBox = document.getElementById('log');
+    const stat = document.getElementById('status-bar');
 
-    function log(msg) {
-        logBox.innerHTML += `<div>> ${msg}</div>`;
-        logBox.scrollTop = logBox.scrollHeight;
-    }
-
-    // 1. کیمرہ شروع کریں
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
-        localStream = stream;
-        document.getElementById('myVideo').srcObject = stream;
-        log("کیمرہ ٹھیک چل رہا ہے۔");
-    }).catch(e => log("کیمرہ نہیں مل رہا۔"));
-
-    // 2. آئی ڈی بنانا اور ڈیٹا بیس میں ڈالنا
-    peer.on('open', id => {
-        log("آپ کا سسٹم آن لائن ہے۔");
-        db.ref('active_sessions/' + id).set({ id: id });
-        db.ref('active_sessions/' + id).onDisconnect().remove();
+    // 1. کیمرہ پکڑنا
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(s => {
+        localStream = s;
+        document.getElementById('myCam').srcObject = s;
+        stat.innerText = "کیمرہ تیار ہے! نیٹ ورک سے جڑ رہے ہیں...";
     });
 
-    // 3. شاگردوں کو ڈھونڈنا (آٹو ڈسکوری)
-    db.ref('active_sessions').on('value', snap => {
-        const list = document.getElementById('user-list');
+    // 2. آن لائن رجسٹریشن
+    peer.on('open', id => {
+        stat.innerText = "آپ لائیو جانے کے لیے تیار ہیں۔";
+        db.ref('hub_v4/' + id).set({ id: id, last: Date.now() });
+        db.ref('hub_v4/' + id).onDisconnect().remove();
+    });
+
+    // 3. آٹو ڈسکوری (شاگردوں کو دیکھنا)
+    db.ref('hub_v4').on('value', snap => {
+        const list = document.getElementById('shagird-found');
         list.innerHTML = "";
         let found = false;
-        snap.forEach(child => {
-            const user = child.val();
-            if (user.id !== peer.id) {
+        snap.forEach(c => {
+            const u = c.val();
+            if (u.id !== peer.id) {
                 found = true;
-                list.innerHTML += `<button class="btn" onclick="startLive('${user.id}')">اس شاگرد سے ویڈیو کال جوڑیں</button>`;
+                list.innerHTML += `<button class="btn-live" onclick="goLive('${u.id}')">شاگرد کے ساتھ لائیو بیٹھیں</button>`;
             }
         });
-        if (!found) list.innerHTML = "ابھی کوئی شاگرد آن لائن نہیں ہے۔";
+        if (!found) list.innerHTML = "ابھی کوئی شاگرد آن لائن نہیں ہے...";
     });
 
-    // 4. ویڈیو کال جوڑنا
-    function startLive(targetId) {
-        log("کنکشن جوڑنے کی کوشش...");
-        const call = peer.call(targetId, localStream);
-        
-        call.on('stream', remoteStream => {
-            log("ویڈیو موصول ہو گئی!");
-            document.getElementById('peerVideo').srcObject = remoteStream;
+    // 4. کال کرنا (Outgoing)
+    function goLive(target) {
+        stat.innerText = "رابطہ کرنے کی کوشش جاری ہے...";
+        const call = peer.call(target, localStream);
+        call.on('stream', rs => {
+            document.getElementById('peerCam').srcObject = rs;
+            stat.innerText = "رابطہ کامیاب! لائیو شروع ہو چکا ہے۔";
         });
-
-        // اگر 10 سیکنڈ میں کنیکٹ نہ ہو
-        setTimeout(() => {
-            if(!document.getElementById('peerVideo').srcObject) {
-                log("دوبارہ کوشش کر رہے ہیں...");
-                startLive(targetId);
-            }
-        }, 10000);
     }
 
-    // 5. کال کا جواب دینا
+    // 5. کال وصول کرنا (Incoming)
     peer.on('call', call => {
-        log("شاگرد کی کال آ رہی ہے...");
+        stat.innerText = "کال آ رہی ہے، جواب دے رہے ہیں...";
         call.answer(localStream);
-        call.on('stream', remoteStream => {
-            log("شاگرد لائیو آ گیا۔");
-            document.getElementById('peerVideo').srcObject = remoteStream;
+        call.on('stream', rs => {
+            document.getElementById('peerCam').srcObject = rs;
+            stat.innerText = "شاگرد جڑ چکا ہے!";
         });
     });
 
-    peer.on('error', e => log("نیٹ ورک کا مسئلہ: " + e.type));
+    peer.on('error', e => { stat.innerText = "نیٹ ورک کا مسئلہ: دوبارہ پیج ریفریش کریں۔"; });
 
 </script>
 </body>
