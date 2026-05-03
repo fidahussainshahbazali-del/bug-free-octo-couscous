@@ -1,2 +1,6 @@
-# bug-free-octo-couscous
-web style and e
+{
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}
