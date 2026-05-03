@@ -1,155 +1,131 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ur">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Master Fida | Full Academy System</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Fida Live Fix</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
     <style>
-        :root { --main: #00e676; --bg: #080808; --panel: #161616; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; padding-bottom: 80px; }
-        header { background: #000; padding: 15px; text-align: center; border-bottom: 3px solid var(--main); position: sticky; top: 0; z-index: 1000; }
-        
-        /* Video Section */
-        .video-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
-        .v-feed { background: #000; height: 170px; border-radius: 15px; border: 2px solid #222; position: relative; overflow: hidden; }
+        body { background: #050505; color: #fff; font-family: sans-serif; margin: 0; text-align: center; overflow-x: hidden; }
+        header { background: #000; padding: 15px; border-bottom: 3px solid #00e676; box-shadow: 0 0 20px #00e67655; }
+        .v-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 10px; }
+        .v-box { position: relative; width: 45%; min-width: 300px; height: 220px; background: #111; border-radius: 15px; border: 2px solid #222; overflow: hidden; }
         video { width: 100%; height: 100%; object-fit: cover; }
-        .label { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.7); font-size: 10px; padding: 2px 8px; border-radius: 5px; color: var(--main); }
-
-        /* Auto-Discovery List */
-        .discovery { background: var(--panel); margin: 10px; padding: 12px; border-radius: 12px; border: 1px solid #333; text-align: right; }
-        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #222; }
-        .call-btn { background: var(--main); color: black; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; }
-
-        /* Database Section */
-        .db-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 0 10px; margin-top: 10px; }
-        .db-card { background: var(--panel); padding: 12px; border-radius: 10px; text-align: center; border-bottom: 3px solid #333; cursor: pointer; font-size: 12px; }
-
-        /* Chat System */
-        .chat-box { background: #111; margin: 15px 10px; padding: 12px; border-radius: 15px; border: 1px solid #222; }
-        #msgDisplay { height: 140px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 5px; background: #000; border-radius: 8px; margin-bottom: 10px; text-align: left; font-size: 13px; }
-        .m-sent { align-self: flex-end; background: var(--main); color: black; padding: 5px 10px; border-radius: 8px; }
-        .m-rcvd { align-self: flex-start; background: #333; color: white; padding: 5px 10px; border-radius: 8px; }
-        .chat-input { display: flex; gap: 8px; }
-        input { flex: 1; background: #000; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; }
-        .send-btn { background: var(--main); border: none; padding: 0 15px; border-radius: 8px; font-weight: bold; }
-
-        /* Modal for Database */
-        #db-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-height: 70%; background: #111; border: 2px solid var(--main); border-radius: 20px; z-index: 10001; padding: 20px; overflow-y: auto; text-align: right; }
+        .label { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 2px 10px; border-radius: 5px; color: #00e676; font-size: 12px; }
+        #log { background: #111; color: #00e676; padding: 10px; margin: 10px; font-size: 11px; border-radius: 8px; border: 1px solid #333; height: 50px; overflow-y: auto; text-align: left; }
+        .btn { background: #00e676; color: #000; border: none; padding: 15px 30px; border-radius: 10px; font-weight: bold; cursor: pointer; margin: 10px; font-size: 16px; box-shadow: 0 5px 15px #00e67644; }
+        .online-panel { background: #1a1a1a; padding: 20px; margin: 15px; border-radius: 20px; border: 1px solid #333; }
     </style>
 </head>
 <body>
 
-<header><h3 style="margin:0; color:var(--main);">FREE EDUCATION HUB</h3></header>
+<header><h2>FREE EDUCATION HUB</h2></header>
 
-<div class="video-grid">
-    <div class="v-feed" style="border-color: var(--main);">
-        <video id="myCam" autoplay muted playsinline></video>
-        <span class="label">آپ (Ustad Fida)</span>
+<div id="log">سسٹم لوڈ ہو رہا ہے...</div>
+
+<div class="v-container">
+    <div class="v-box" style="border-color: #00e676;">
+        <video id="myVideo" autoplay muted playsinline></video>
+        <span class="label">آپ کا چہرہ</span>
     </div>
-    <div class="v-feed">
-        <video id="peerCam" autoplay playsinline></video>
-        <span class="label" id="peerStatus">شاگرد (Live)</span>
-    </div>
-</div>
-
-<div class="discovery">
-    <h4 style="margin:0 0 8px 0; font-size: 14px; text-align: center; color: var(--main);">آن لائن نیٹ ورک</h4>
-    <div id="online-list">تلاش جاری ہے...</div>
-</div>
-
-<div class="db-grid">
-    <div class="db-card" onclick="openData('Chemistry')">🧪 Chem</div>
-    <div class="db-card" onclick="openData('Biology')">🧬 Bio</div>
-    <div class="db-card" onclick="openData('Physics')">⚡ Phy</div>
-</div>
-
-<div class="chat-box">
-    <div id="msgDisplay"></div>
-    <div class="chat-input">
-        <input type="text" id="chatMsg" placeholder="پیغام لکھیں...">
-        <button class="send-btn" onclick="sendChat()">SEND</button>
+    <div class="v-box">
+        <video id="peerVideo" autoplay playsinline></video>
+        <span class="label">شاگرد کا چہرہ</span>
     </div>
 </div>
 
-<div id="db-modal">
-    <div id="db-content"></div>
-    <button onclick="document.getElementById('db-modal').style.display='none'" style="width:100%; padding:10px; margin-top:15px; background:var(--main); border:none; border-radius:10px; font-weight:bold;">بند کریں</button>
+<div class="online-panel">
+    <h3 style="color:#00e676; margin-top: 0;">لائیو شاگردوں کی فہرست</h3>
+    <div id="user-list">شاگرد تلاش کر رہے ہیں...</div>
 </div>
 
 <script>
-    const conf = { databaseURL: "https://free-education-hub-fida-default-rtdb.firebaseio.com/" };
-    firebase.initializeApp(conf);
+    // Firebase Setup
+    const firebaseConfig = { databaseURL: "https://free-education-hub-fida-default-rtdb.firebaseio.com/" };
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const peer = new Peer();
-    let stream;
 
-    window.onload = async () => {
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
-            document.getElementById('myCam').srcObject = stream;
-
-            peer.on('open', (id) => {
-                db.ref('active/' + id).set({id: id});
-                db.ref('active/' + id).onDisconnect().remove();
-            });
-
-            // Discovery Logic
-            db.ref('active').on('value', (snap) => {
-                const list = document.getElementById('online-list');
-                list.innerHTML = "";
-                snap.forEach(c => {
-                    const u = c.val();
-                    if(u.id !== peer.id) {
-                        list.innerHTML += `<div class="user-row">
-                            <button class="call-btn" onclick="callUser('${u.id}')">LIVE CALL</button>
-                            <span>شاگرد آن لائن 🟢</span>
-                        </div>`;
-                    }
-                });
-            });
-
-            // Global Chat Logic
-            db.ref('messages').limitToLast(10).on('child_added', (snap) => {
-                const d = snap.val();
-                const box = document.getElementById('msgDisplay');
-                const type = d.sender === peer.id ? 'm-sent' : 'm-rcvd';
-                box.innerHTML += `<div class="${type}"><b>${d.sender === peer.id ? 'آپ' : 'شاگرد'}:</b> ${d.text}</div>`;
-                box.scrollTop = box.scrollHeight;
-            });
-
-        } catch (e) { alert("کیمرہ الاؤ کریں!"); }
-    };
-
-    function callUser(id) {
-        const call = peer.call(id, stream);
-        call.on('stream', (rs) => document.getElementById('peerCam').srcObject = rs);
-    }
-
-    peer.on('call', (call) => {
-        call.answer(stream);
-        call.on('stream', (rs) => document.getElementById('peerCam').srcObject = rs);
+    // PeerJS with Force TURN/STUN
+    const peer = new Peer({
+        config: {
+            'iceServers': [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' }
+            ]
+        }
     });
 
-    function sendChat() {
-        const inp = document.getElementById('chatMsg');
-        if(inp.value.trim() !== "") {
-            db.ref('messages').push({ sender: peer.id, text: inp.value });
-            inp.value = "";
-        }
+    let localStream;
+    const logBox = document.getElementById('log');
+
+    function log(msg) {
+        logBox.innerHTML += `<div>> ${msg}</div>`;
+        logBox.scrollTop = logBox.scrollHeight;
     }
 
-    function openData(subject) {
-        let html = `<h3>${subject} ڈیٹا بیس</h3><ul>`;
-        for(let i=1; i<=15; i++) { html += `<li>${subject} ریکارڈ نمبر ${i} - مکمل تفصیل</li>`; }
-        html += `</ul><p>ہزاروں مزید ریکارڈز موجود ہیں...</p>`;
-        document.getElementById('db-content').innerHTML = html;
-        document.getElementById('db-modal').style.display = 'block';
+    // 1. کیمرہ شروع کریں
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
+        localStream = stream;
+        document.getElementById('myVideo').srcObject = stream;
+        log("کیمرہ ٹھیک چل رہا ہے۔");
+    }).catch(e => log("کیمرہ نہیں مل رہا۔"));
+
+    // 2. آئی ڈی بنانا اور ڈیٹا بیس میں ڈالنا
+    peer.on('open', id => {
+        log("آپ کا سسٹم آن لائن ہے۔");
+        db.ref('active_sessions/' + id).set({ id: id });
+        db.ref('active_sessions/' + id).onDisconnect().remove();
+    });
+
+    // 3. شاگردوں کو ڈھونڈنا (آٹو ڈسکوری)
+    db.ref('active_sessions').on('value', snap => {
+        const list = document.getElementById('user-list');
+        list.innerHTML = "";
+        let found = false;
+        snap.forEach(child => {
+            const user = child.val();
+            if (user.id !== peer.id) {
+                found = true;
+                list.innerHTML += `<button class="btn" onclick="startLive('${user.id}')">اس شاگرد سے ویڈیو کال جوڑیں</button>`;
+            }
+        });
+        if (!found) list.innerHTML = "ابھی کوئی شاگرد آن لائن نہیں ہے۔";
+    });
+
+    // 4. ویڈیو کال جوڑنا
+    function startLive(targetId) {
+        log("کنکشن جوڑنے کی کوشش...");
+        const call = peer.call(targetId, localStream);
+        
+        call.on('stream', remoteStream => {
+            log("ویڈیو موصول ہو گئی!");
+            document.getElementById('peerVideo').srcObject = remoteStream;
+        });
+
+        // اگر 10 سیکنڈ میں کنیکٹ نہ ہو
+        setTimeout(() => {
+            if(!document.getElementById('peerVideo').srcObject) {
+                log("دوبارہ کوشش کر رہے ہیں...");
+                startLive(targetId);
+            }
+        }, 10000);
     }
+
+    // 5. کال کا جواب دینا
+    peer.on('call', call => {
+        log("شاگرد کی کال آ رہی ہے...");
+        call.answer(localStream);
+        call.on('stream', remoteStream => {
+            log("شاگرد لائیو آ گیا۔");
+            document.getElementById('peerVideo').srcObject = remoteStream;
+        });
+    });
+
+    peer.on('error', e => log("نیٹ ورک کا مسئلہ: " + e.type));
+
 </script>
 </body>
 </html>
